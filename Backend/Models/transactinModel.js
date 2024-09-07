@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const transactionSchema = new mongoose.Schema(
   {
-    bookId: {
+    bookName: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "books",
       required: true,
@@ -22,6 +22,10 @@ const transactionSchema = new mongoose.Schema(
     totalRent: {
       type: Number,
     },
+    status: {
+      type: Boolean,
+      default: false
+    }
   },
   { timestamps: true }
 );
