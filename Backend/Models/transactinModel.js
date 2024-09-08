@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
+import { transactionDB } from "../Databse/TransactionDB.js";
+
 
 const transactionSchema = new mongoose.Schema(
   {
-    bookName: {
+    bookId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "books",
       required: true,
@@ -30,4 +32,4 @@ const transactionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const transactionModel = mongoose.model("transactions", transactionSchema);
+export const transactionModel = mongoose.model("transactions",transactionSchema )

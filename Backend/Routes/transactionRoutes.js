@@ -8,4 +8,4 @@ transactionRouter.post('/return', returnBook);
 transactionRouter.get('/book/:bookName', getTransactionDetailsByBook);
 transactionRouter.get('/book/rent/:bookName', getTotalRentByBook); 
 transactionRouter.get('/user/:userId', getBooksIssuedToUser); 
-transactionRouter.get('/date-range', getBooksIssuedInDateRange); 
+transactionRouter.get('/date-range', getBooksIssuedInDateRange);
