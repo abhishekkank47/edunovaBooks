@@ -26,6 +26,13 @@ app.use('/api/v1/book', bookRouter)
 app.use('/api/v1/transaction', transactionRouter)
 
 //SERVER
+app.get('/', (req,res)=>{
+    res.send({
+        success:true,
+        message:'BACKEND CONNECTED SUCCESSFULLY, PLEASE TEST ENDPOINTS'
+    })
+})
+
 app.listen( Port, ()=>{
     console.log(`SERVER IS RUNNING ON PORT ${Port}`) 
 })

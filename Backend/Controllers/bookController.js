@@ -20,7 +20,7 @@ export const getBooks = async (req, res) => {
 export const getBookByName = async (req, res) => {
   try {
     const { name } = req.query;
-    const books = await bookModel.find({ bookName: new RegExp(name, 'i') });
+    const books = await bookModel.findOne({ bookName: new RegExp(name, 'i') });
     res.status(200).send(
       {
         success:true,
