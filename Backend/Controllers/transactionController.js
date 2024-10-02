@@ -80,7 +80,6 @@ export const returnBook = async (req, res) => {
       });
     }
 
-
     //EXISTENCE OF BOOK
     const book = await bookModel.findOne({ bookName });
     if (!book) {
@@ -131,40 +130,34 @@ export const returnBook = async (req, res) => {
 
 export const getTransactionDetailsByBook = async (req, res) => {
   try {
-
-    const { bookName } = req.params
+    const { bookName } = req.params;
 
     //GET BOOK BY NAME ID
     const book = await bookModel.findOne({ bookName });
     if (!book) {
-      return res.status(404).send(
-        { 
-          success: false, 
-          message: "BOOK NOT FOUND" 
-        }
-      )
+      return res.status(404).send({
+        success: false,
+        message: "BOOK NOT FOUND",
+      });
     }
 
     //ALL TRANSACTION RELATED BOOK
-    const transactions = await transactionModel.find({ bookId: book._id })
-      .populate("userId", "name") 
-      .populate("bookId", "bookName")
+    const transactions = await transactionModel
+      .find({ bookId: book._id })
+      .populate("userId", "name")
+      .populate("bookId", "bookName");
 
     if (!transactions || transactions.length === 0) {
-      return res.status(404).send(
-        {
-          success: false,
-          message: "NO TRANSCTION HISTORY",
-        }
-      );
+      return res.status(404).send({
+        success: false,
+        message: "NO TRANSCTION HISTORY",
+      });
     }
 
-    res.status(200).send(
-    {
+    res.status(200).send({
       success: true,
       transactions,
-    }
-  );
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -172,37 +165,33 @@ export const getTransactionDetailsByBook = async (req, res) => {
 
 export const getTotalRentByBook = async (req, res) => {
   try {
-    const { bookName } = req.params
+    const { bookName } = req.params;
 
     //GET BOOK BY NAME ID
     const book = await bookModel.findOne({ bookName });
     if (!book) {
-      return res.status(404).send(
-        { 
-          success: false, 
-          message: "BOOK NOT FOUND" 
-        }
-      )
+      return res.status(404).send({
+        success: false,
+        message: "BOOK NOT FOUND",
+      });
     }
 
     //ALL TRANSACTION RELATED BOOK WITH STATUS RETURN TRUE
-    const transactions = await transactionModel.find({ bookId: book._id, status: true })
-      .populate("userId", "name") 
-      .populate("bookId", "bookName")
-    
+    const transactions = await transactionModel
+      .find({ bookId: book._id, status: true })
+      .populate("userId", "name")
+      .populate("bookId", "bookName");
+
     //CALCULATION OF TOTAL RENT
     let totalRent = 0;
     for (let i = 0; i < transactions.length; i++) {
-      totalRent += transactions[i].totalRent
+      totalRent += transactions[i].totalRent;
     }
 
-    res.status(200).send(
-      { 
-        success: true, 
-        totalRent 
-      }
-    );
-
+    res.status(200).send({
+      success: true,
+      totalRent,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -213,25 +202,21 @@ export const getBooksIssuedToUser = async (req, res) => {
     const { userId } = req.params;
 
     //TRANSACTION HISTROY OF USER
-    const transactions = await transactionModel.find({ userId })
-      .populate("bookId", "bookName")
+    const transactions = await transactionModel
+      .find({ userId })
+      .populate("bookId", "bookName");
 
     if (!transactions || transactions.length === 0) {
-      return res.status(404).send(
-        { 
-          success: false, 
-          message: "USER HAS NO HISTORY OF TRANSACTION YET" 
-        }
-      )
+      return res.status(404).send({
+        success: false,
+        message: "USER HAS NO HISTORY OF TRANSACTION YET",
+      });
     }
 
-    res.status(200).send(
-      { 
-        success: true, 
-        transactions 
-      }
-    )
-
+    res.status(200).send({
+      success: true,
+      transactions,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -243,37 +228,199 @@ export const getBooksIssuedInDateRange = async (req, res) => {
 
     //SETTING INPUT TO THESE
     const start = new Date(startDate);
-    const end = new Date(endDate)
+    const end = new Date(endDate);
 
     //SET DATE AT : YYYY-MM-DDT23:59:59.999
-    end.setHours(23, 59, 59, 999)
+    end.setHours(23, 59, 59, 999);
 
     //START DATE <= TRANSACTION => END DATE
-    const transactions = await transactionModel.find({
-      issueDate: {
-        $gte: start,
-        $lte: end
-      }
-    })
-    .populate("userId", "name")
-    .populate("bookId", "bookName");
+    const transactions = await transactionModel
+      .find({
+        issueDate: {
+          $gte: start,
+          $lte: end,
+        },
+      })
+      .populate("userId", "name")
+      .populate("bookId", "bookName");
 
     //EXISTENCE
     if (!transactions || transactions.length === 0) {
-      return res.status(404).send(
-        { 
-          success: false, 
-          message: "No books issued in this date range." 
-        });
+      return res.status(404).send({
+        success: false,
+        message: "No books issued in this date range.",
+      });
     }
 
-    res.status(200).send(
-      { 
-        success: true, 
-        transactions 
-      });
-    
+    res.status(200).send({
+      success: true,
+      transactions,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+//TASK
+export const getBooksInDateRange = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.body;
+
+    //VALIDATION
+    if (!startDate || !endDate) {
+      return res.status(400).send({
+        success: false,
+        message: "Start date and end date are required",
+      });
+    }
+
+    //SETTING DATE
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Generate array of all dates between startDate and endDate
+    const dateArray = [];
+    let currentDate = new Date(start);
+
+    while (currentDate <= end) {
+      dateArray.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1); // move to next day
+    }
+
+    //AGGREGATE PIPELINE
+    const transactions = await transactionModel.aggregate([
+      {
+        //Match transactions where issueDate or returnDate is within the date range
+        $match: {
+          $or: [
+            { issueDate: { $gte: start, $lte: end } },
+            { returnDate: { $gte: start, $lte: end } },
+          ],
+        },
+      },
+      {
+        //Create a new field "day" by truncating issueDate/returnDate to just the day
+        $addFields: {
+          day: {
+            $cond: {
+              if: { $ne: ["$issueDate", null] },
+              then: {
+                $dateToString: { format: "%Y-%m-%d", date: "$issueDate" },
+              },
+              else: {
+                $dateToString: { format: "%Y-%m-%d", date: "$returnDate" },
+              },
+            },
+          },
+        },
+      },
+      {
+        //Group by the day
+        $group: {
+          _id: "$day",
+          issuedBooks: {
+            $push: {
+              $cond: {
+                if: { $ne: ["$issueDate", null] },
+                then: {
+                  bookId: "$bookId",
+                  issueDate: "$issueDate",
+                  userId: "$userId",
+                },
+                else: null,
+              },
+            },
+          },
+          returnedBooks: {
+            $push: {
+              $cond: {
+                if: { $ne: ["$returnDate", null] },
+                then: {
+                  bookId: "$bookId",
+                  returnDate: "$returnDate",
+                  userId: "$userId",
+                },
+                else: null,
+              },
+            },
+          },
+        },
+      },
+      {
+        //Remove null values from the issuedBooks and returnedBooks arrays
+        $project: {
+          issuedBooks: {
+            $filter: {
+              input: "$issuedBooks",
+              as: "book",
+              cond: { $ne: ["$$book", null] },
+            },
+          },
+          returnedBooks: {
+            $filter: {
+              input: "$returnedBooks",
+              as: "book",
+              cond: { $ne: ["$$book", null] },
+            },
+          },
+        },
+      },
+      {
+        //Populate issuedBooks and returnedBooks with actual details from books and users
+        $lookup: {
+          from: "books",
+          localField: "issuedBooks.bookId",
+          foreignField: "_id",
+          as: "issuedBookDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "books",
+          localField: "returnedBooks.bookId",
+          foreignField: "_id",
+          as: "returnedBookDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "issuedBooks.userId",
+          foreignField: "_id",
+          as: "issuedUserDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "returnedBooks.userId",
+          foreignField: "_id",
+          as: "returnedUserDetails",
+        },
+      },
+    ]);
+
+    //Create an output array that ensures every date has an entry, even if no books were issued or returned
+    const result = dateArray.map((date) => {
+      const dayStr = date.toISOString().split("T")[0]; // format the date as YYYY-MM-DD
+      const matchingTransaction = transactions.find((t) => t._id === dayStr);
+
+      return {
+        date: dayStr,
+        issuedBooks: matchingTransaction ? matchingTransaction.issuedBooks : [],
+        returnedBooks: matchingTransaction
+          ? matchingTransaction.returnedBooks
+          : [],
+      };
+    });
+
+    //Send the result as response
+    res.status(200).json({
+      success: true,
+      message: "Books issued / returned within the date range",
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
